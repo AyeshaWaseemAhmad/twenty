@@ -16,6 +16,7 @@ import { ViewBarAnyFieldFilterEffect } from '@/views/components/ViewBarAnyFieldF
 import { ViewBarFilterDropdown } from '@/views/components/ViewBarFilterDropdown';
 import { ViewBarRecordFieldEffect } from '@/views/components/ViewBarRecordFieldEffect';
 import { ViewBarRecordFilterEffect } from '@/views/components/ViewBarRecordFilterEffect';
+import { ViewBarUnsavedRecordFiltersPersistenceEffect } from '@/views/components/ViewBarUnsavedRecordFiltersPersistenceEffect';
 import { ViewBarRecordFilterGroupEffect } from '@/views/components/ViewBarRecordFilterGroupEffect';
 import { ViewBarRecordSortEffect } from '@/views/components/ViewBarRecordSortEffect';
 import { getViewBarFilterDropdownId } from '@/views/utils/getViewBarFilterDropdownId';
@@ -55,6 +56,7 @@ export const ViewBar = ({
       <ViewBarAnyFieldFilterEffect />
       <ViewBarRecordFieldEffect />
       <ViewBarRecordFilterEffect />
+      <ViewBarUnsavedRecordFiltersPersistenceEffect />
       <ViewBarRecordSortEffect />
       <QueryParamsFiltersEffect />
       <QueryParamsSortsEffect />

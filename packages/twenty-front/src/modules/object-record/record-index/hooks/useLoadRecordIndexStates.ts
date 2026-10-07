@@ -37,7 +37,10 @@ import { useAtomComponentStateCallbackState } from '@/ui/utilities/state/jotai/h
 import { hasInitializedCurrentRecordFieldsComponentFamilyState } from '@/views/states/hasInitializedCurrentRecordFieldsComponentFamilyState';
 import { hasInitializedCurrentRecordFiltersComponentFamilyState } from '@/views/states/hasInitializedCurrentRecordFiltersComponentFamilyState';
 import { hasInitializedCurrentRecordSortsComponentFamilyState } from '@/views/states/hasInitializedCurrentRecordSortsComponentFamilyState';
+import { loadedRecordFiltersViewIdComponentState } from '@/views/states/loadedRecordFiltersViewIdComponentState';
+import { unsavedRecordFiltersFamilyState } from '@/views/states/unsavedRecordFiltersFamilyState';
 import { type View } from '@/views/types/View';
+import { getRestorableUnsavedRecordFilters } from '@/views/utils/getRestorableUnsavedRecordFilters';
 import { mapViewFieldToRecordField } from '@/views/utils/mapViewFieldToRecordField';
 import { mapViewFieldsToColumnDefinitions } from '@/views/utils/mapViewFieldsToColumnDefinitions';
 import { mapViewFilterGroupsToRecordFilterGroups } from '@/views/utils/mapViewFilterGroupsToRecordFilterGroups';
@@ -237,19 +240,22 @@ export const useLoadRecordIndexStates = () => {
       const flattenedFieldMetadataItems = store.get(
         flattenedFieldMetadataItemsSelector.atom,
       );
-      const recordFilters = mapViewFiltersToFilters(
-        view.viewFilters,
-        flattenedFieldMetadataItems,
-      );
+      const restorableUnsavedRecordFilters = isDefined(options?.recordIndexId)
+        ? null
+        : getRestorableUnsavedRecordFilters({
+            unsavedRecordFilters: store.get(
+              unsavedRecordFiltersFamilyState.atomFamily({ viewId: view.id }),
+            ),
+            fieldMetadataItems: flattenedFieldMetadataItems,
+          });
 
-      const recordFilterGroups = mapViewFilterGroupsToRecordFilterGroups(
-        view.viewFilterGroups ?? [],
-      );
+      const recordFilters =
+        restorableUnsavedRecordFilters?.recordFilters ??
+        mapViewFiltersToFilters(view.viewFilters, flattenedFieldMetadataItems);
 
-      const contextStoreFilters = mapViewFiltersToFilters(
-        view.viewFilters,
-        flattenedFieldMetadataItems,
-      );
+      const recordFilterGroups =
+        restorableUnsavedRecordFilters?.recordFilterGroups ??
+        mapViewFilterGroupsToRecordFilterGroups(view.viewFilterGroups ?? []);
 
       let recordIndexGroupFieldMetadataItemValue = undefined;
       if (isDefined(view.mainGroupByFieldMetadataId)) {
@@ -312,6 +318,10 @@ export const useLoadRecordIndexStates = () => {
           instanceId: recordIndexId,
           familyKey: { viewId: view.id },
         });
+      const loadedRecordFiltersViewIdAtom =
+        loadedRecordFiltersViewIdComponentState.atomFamily({
+          instanceId: recordIndexId,
+        });
 
       syncRecordIndexViewFields(view, objectMetadataItem, {
         recordIndexId,
@@ -323,6 +333,7 @@ export const useLoadRecordIndexStates = () => {
           batchSet(currentRecordFilterGroupsAtom, recordFilterGroups);
           batchSet(anyFieldFilterValueAtom, view.anyFieldFilterValue ?? '');
           batchSet(hasInitializedFiltersAtom, true);
+          batchSet(loadedRecordFiltersViewIdAtom, view.id);
 
           batchSet(currentRecordSortsAtom, view.viewSorts);
           batchSet(hasInitializedSortsAtom, true);
@@ -330,7 +341,7 @@ export const useLoadRecordIndexStates = () => {
           const prevRule = get(contextStoreTargetedRecordsRuleAtom);
           batchSet(contextStoreTargetedRecordsRuleAtom, {
             ...prevRule,
-            filters: contextStoreFilters,
+            filters: recordFilters,
           });
 
           batchSet(recordIndexViewTypeAtom, view.type);
