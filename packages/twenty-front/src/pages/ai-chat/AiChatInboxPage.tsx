@@ -356,7 +356,9 @@ const AiChatInboxPageContent = () => {
                   <AiChatInboxNewThreadChannelEffect />
                   <AiChatNewThreadPageContent
                     showInformationBanner={!isSplitView}
-                    headerActions={isMobile ? backToInboxButton : undefined}
+                    headerActions={
+                      isMobile ? backToInboxButton : closeConversationButton
+                    }
                   />
                 </>
               )}

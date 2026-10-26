@@ -640,6 +640,38 @@ export const AskAiAfterClosingConversation: Story = {
   },
 };
 
+export const CloseNewChatPane: Story = {
+  beforeEach: () => {
+    jotaiStore.set(
+      aiChatInboxLayoutState.atom,
+      AI_CHAT_INBOX_LAYOUT.SPLIT_VIEW,
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+
+    await canvas.findByText(FIRST_THREAD_TITLE);
+
+    const list = canvas.getByRole('region', { name: 'Conversation list' });
+    const fullListWidth = list.getBoundingClientRect().width;
+
+    await user.click(
+      canvas.getByRole('button', { name: 'Open new chat route' }),
+    );
+    await expect(await canvas.findByRole('textbox')).toBeVisible();
+
+    const conversation = canvas.getByRole('region', { name: 'Conversation' });
+
+    await user.click(canvas.getByRole('button', { name: 'Close' }));
+    await waitFor(() => {
+      expect(conversation).not.toBeInTheDocument();
+      expect(list.getBoundingClientRect().width).toBeCloseTo(fullListWidth, 0);
+    });
+    await expect(canvas.queryByRole('textbox')).not.toBeInTheDocument();
+  },
+};
+
 export const ClosedConversationHistory: Story = {
   beforeEach: () => {
     jotaiStore.set(
